@@ -3,6 +3,8 @@ import json
 import logging
 import docker
 from docker.errors import DockerException
+import threading
+from concurrent.futures import ThreadPoolExecutor
 
 
 class DockerMonitor:
@@ -11,28 +13,45 @@ class DockerMonitor:
         self.channel = discord_channel
         self.client = None
         self.waiting_for_startup = False  # Flag to track if we're waiting for server ready
+        self.executor = ThreadPoolExecutor(max_workers=1)
+        self.loop = None
         
     async def start_monitoring(self):
         """Start monitoring Docker events"""
+        self.loop = asyncio.get_event_loop()
+        
+        # Run Docker monitoring in a separate thread to avoid blocking
+        if self.loop:
+            await self.loop.run_in_executor(self.executor, self._monitor_docker_events)
+        
+    def _monitor_docker_events(self):
+        """Monitor Docker events in a separate thread"""
         while True:
             try:
                 # Initialize Docker client using the socket
                 self.client = docker.from_env()
                 logging.info(f"Starting Docker event monitoring for {self.container_name}")
                 
-                # Listen for container events in a loop
+                # Listen for container events
                 for event in self.client.events(decode=True, filters={
                     'container': self.container_name,
                     'event': ['start', 'die']
                 }):
-                    await self.handle_docker_event(event)
+                    # Schedule the event handling in the main asyncio loop
+                    if self.loop:
+                        asyncio.run_coroutine_threadsafe(
+                            self.handle_docker_event(event), 
+                            self.loop
+                        )
                     
             except DockerException as e:
                 logging.error(f"Docker client error: {e}")
-                await asyncio.sleep(5)  # Wait before retrying
+                import time
+                time.sleep(5)  # Wait before retrying
             except Exception as e:
                 logging.error(f"Docker monitoring error: {e}")
-                await asyncio.sleep(5)  # Wait before retrying
+                import time
+                time.sleep(5)  # Wait before retrying
 
     async def handle_docker_event(self, event):
         """Handle Docker container events"""
@@ -54,7 +73,7 @@ class DockerMonitor:
             logging.info(f"Container {container_name} started")
             self.waiting_for_startup = True  # Set flag for log monitor to pick up
 
-    async def notify_server_ready(self):
+    def notify_server_ready(self):
         """Called by log monitor when server is ready"""
         logging.info(f"notify_server_ready called - waiting_for_startup: {self.waiting_for_startup}")
         if self.waiting_for_startup:

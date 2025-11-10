@@ -99,7 +99,7 @@ class LogMonitor:
         elif "Done (" in line and "For help, type" in line and "[Server thread/INFO]:" in line:
             logging.info("Server startup complete detected from logs")
             if self.docker_monitor:
-                await self.docker_monitor.notify_server_ready()
+                self.docker_monitor.notify_server_ready()
             
             # Always send ready message as fallback (in case Docker monitoring fails)
             await self.channel.send("🟢 **Le serveur Minecraft est prêt !**")
