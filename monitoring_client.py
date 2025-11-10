@@ -100,6 +100,10 @@ class LogMonitor:
             logging.info("Server startup complete detected from logs")
             if self.docker_monitor:
                 await self.docker_monitor.notify_server_ready()
+            
+            # Always send ready message as fallback (in case Docker monitoring fails)
+            await self.channel.send("🟢 **Le serveur Minecraft est prêt !**")
+            logging.info("Server ready notification sent directly")
 
         elif "WARN" in line or "ERROR" in line:
             # Optionally send warning/error alerts

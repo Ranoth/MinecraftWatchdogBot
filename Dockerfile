@@ -21,9 +21,11 @@ COPY rcon_client.py .
 COPY monitoring_client.py .
 COPY docker_monitor.py .
 
-# Create a non-root user for security
+# Create a non-root user for security (but we'll run as root for Docker socket access)
 RUN useradd -m -u 1000 botuser && chown -R botuser:botuser /app
-USER botuser
+
+# Run as root to access Docker socket
+# USER botuser
 
 # Run the application
 CMD ["python", "main.py"]

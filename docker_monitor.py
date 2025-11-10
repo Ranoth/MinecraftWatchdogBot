@@ -1,47 +1,35 @@
 import asyncio
 import json
 import logging
+import docker
+from docker.errors import DockerException
 
 
 class DockerMonitor:
     def __init__(self, container_name, discord_channel):
         self.container_name = container_name
         self.channel = discord_channel
-        self.process = None
-        self.waiting_for_startup = (
-            False  # Flag to track if we're waiting for server ready
-        )
-
+        self.client = None
+        self.waiting_for_startup = False  # Flag to track if we're waiting for server ready
+        
     async def start_monitoring(self):
         """Start monitoring Docker events"""
-        logging.info(f"Starting Docker event monitoring for {self.container_name}")
-
         while True:
             try:
-                # Start docker events process
-                self.process = await asyncio.create_subprocess_exec(
-                    "docker",
-                    "events",
-                    "--filter",
-                    "event=start",
-                    "--filter",
-                    "event=die",
-                    "--filter",
-                    f"container={self.container_name}",
-                    "--format",
-                    "{{json .}}",
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
-                )
-
-                if self.process and self.process.stdout:
-                    async for line in self.process.stdout:
-                        try:
-                            event = json.loads(line.decode())
-                            await self.handle_docker_event(event)
-                        except json.JSONDecodeError as e:
-                            logging.error(f"Failed to parse Docker event: {e}")
-
+                # Initialize Docker client using the socket
+                self.client = docker.from_env()
+                logging.info(f"Starting Docker event monitoring for {self.container_name}")
+                
+                # Listen for container events in a loop
+                for event in self.client.events(decode=True, filters={
+                    'container': self.container_name,
+                    'event': ['start', 'die']
+                }):
+                    await self.handle_docker_event(event)
+                    
+            except DockerException as e:
+                logging.error(f"Docker client error: {e}")
+                await asyncio.sleep(5)  # Wait before retrying
             except Exception as e:
                 logging.error(f"Docker monitoring error: {e}")
                 await asyncio.sleep(5)  # Wait before retrying
@@ -68,7 +56,11 @@ class DockerMonitor:
 
     async def notify_server_ready(self):
         """Called by log monitor when server is ready"""
+        logging.info(f"notify_server_ready called - waiting_for_startup: {self.waiting_for_startup}")
         if self.waiting_for_startup:
-            await self.channel.send("🟢 **Le serveur Minecraft est prêt !**")
+            # Don't send message here since log monitor will send it anyway
+            # Just update the flag
             self.waiting_for_startup = False
-            logging.info("Server startup complete notification sent")
+            logging.info("Server startup flag cleared (message sent by log monitor)")
+        else:
+            logging.info("Server ready notification skipped - not waiting for startup")
