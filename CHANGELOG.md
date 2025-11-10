@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.1.0...v1.1.1) (2025-11-10)
+
+
+### Bug Fixes
+
+* docker monitoring ([331319f](https://github.com/Ranoth/MinecraftWatchdogBot/commit/331319f301b6c5310fefa7ec5f6de17b3f9f40f1))
+
 ## [1.1.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.0.1...v1.1.0) (2025-11-10)
 
 
