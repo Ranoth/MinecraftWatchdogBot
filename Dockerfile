@@ -19,6 +19,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY main.py .
 COPY rcon_client.py .
 COPY monitoring_client.py .
+COPY docker_monitor.py .
 
 # Create a non-root user for security
 RUN useradd -m -u 1000 botuser && chown -R botuser:botuser /app
