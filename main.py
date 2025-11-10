@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import os
 
 from rcon_client import RCONClient
-from monitoring_client import monitor_server_logs, set_docker_monitor
+from monitoring_client import LogMonitor
 from docker_monitor import DockerMonitor
 
 load_dotenv()
@@ -32,6 +32,10 @@ intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 rcon_client = RCONClient(rcon_host, rcon_port, rcon_password, discord_logger)
 
+# Global variable to store task references
+log_monitor_task = None
+docker_monitor_task = None
+
 
 @bot.event
 async def on_ready():
@@ -48,14 +52,15 @@ async def on_ready():
         # Create docker monitor
         docker_monitor = DockerMonitor("minecraftNewWorld", channel)
 
-        # Connect docker monitor to log monitor
-        set_docker_monitor(docker_monitor)
+        # Create log monitor and connect it to docker monitor
+        log_monitor = LogMonitor(channel, docker_monitor)
 
-        # Start log monitoring
-        asyncio.create_task(monitor_server_logs(channel))
+        # Start log monitoring - keep reference to prevent garbage collection
+        global log_monitor_task, docker_monitor_task
+        log_monitor_task = asyncio.create_task(log_monitor.start_monitoring())
 
-        # Start Docker event monitoring
-        asyncio.create_task(docker_monitor.start_monitoring())
+        # Start Docker event monitoring - keep reference to prevent garbage collection
+        docker_monitor_task = asyncio.create_task(docker_monitor.start_monitoring())
     else:
         discord_logger.error(f"Channel with ID {channel_id} not found")
 
@@ -70,18 +75,38 @@ async def on_message(message):
 
 
 async def send_command_wrapper(*, command: str):
-    try:
-        response = await rcon_client.send_command(command)
-        if response:
-            if len(response) > 1900:
-                response = response[:1900] + "\n...[truncated]"
-            return f"\n{response}\n"
-        else:
-            discord_logger.error(f"Failed to execute RCON command: {command}")
-            return "Failed to execute RCON command."
-    except Exception as e:
-        discord_logger.error(f"Error in rcon command: {e}")
-        return "Error connecting to Minecraft server."
+    response = await rcon_client.send_command(command)
+
+    # Check if response is an error message (starts with ❌)
+    if response.startswith("❌"):
+        return response  # Return error message as-is
+
+    # Clean up the response and add proper line breaks
+    cleaned_response = response.strip()
+
+    # Generic approach: Add line breaks after sentences and common patterns
+    import re
+
+    # Split on periods followed by capital letters (sentence boundaries)
+    cleaned_response = re.sub(r"\.(\s*)([A-Z])", r".\n\2", cleaned_response)
+
+    # Split on colons followed by numbers or text (data labels)
+    cleaned_response = re.sub(r":(\s*)([0-9A-Za-z])", r":\n\2", cleaned_response)
+
+    # Clean up excessive whitespace and newlines
+    cleaned_response = re.sub(
+        r"\s+", " ", cleaned_response
+    )  # Multiple spaces to single
+    cleaned_response = re.sub(
+        r" *\n *", "\n", cleaned_response
+    )  # Clean around newlines
+    cleaned_response = re.sub(
+        r"\n{3,}", "\n\n", cleaned_response
+    )  # Max 2 consecutive newlines
+
+    if len(cleaned_response) > 1900:
+        cleaned_response = cleaned_response[:1900] + "\n...[truncated]"
+    return f"\n{cleaned_response}\n"
 
 
 @bot.command()
@@ -91,9 +116,15 @@ async def list(ctx):
 
 
 @bot.command()
-async def whitelist(ctx, *, command: str):
+async def whitelist(ctx, *, nom: str):
     """Ajoute un ami à la whitelist du serveur."""
-    await ctx.send(await send_command_wrapper(command=f"whitelist add {command}"))
+    await ctx.send(await send_command_wrapper(command=f"whitelist add {nom}"))
+
+
+@bot.command()
+async def status(ctx):
+    """Affiche le statut du serveur Minecraft."""
+    await ctx.send(await send_command_wrapper(command="tick query"))
 
 
 # Remove the default help command

@@ -37,12 +37,35 @@ class RCONClient:
         try:
             await self.connect()
             response = await self._send_packet(2, command)
-            self.discord_logger.debug(f"RCON command executed: {command}")
-            return response
-        except Exception as e:
-            self.discord_logger.error(f"RCON command failed: {e}")
+            if response is not None:
+                self.disconnect()
+                self.discord_logger.debug(f"RCON command executed: {command}")
+                return response
+            else:
+                self.disconnect()
+                error_msg = f"❌ Pas de réponse reçue pour la commande: `{command}`"
+                self.discord_logger.error(f"RCON command failed - no response: {command}")
+                return error_msg
+        except ConnectionRefusedError as e:
             self.disconnect()
-            return None
+            error_msg = "❌ Connection refusée, le serveur est peut-être hors ligne"
+            self.discord_logger.error(f"RCON connection refused for command '{command}': {e}")
+            return error_msg
+        except TimeoutError as e:
+            self.disconnect()
+            error_msg = "❌ Délai de connexion dépassé : le serveur ne répond pas"
+            self.discord_logger.error(f"RCON timeout for command '{command}': {e}")
+            return error_msg
+        except OSError as e:
+            self.disconnect()
+            error_msg = f"❌ Erreur réseau : {str(e)}"
+            self.discord_logger.error(f"RCON network error for command '{command}': {e}")
+            return error_msg
+        except Exception as e:
+            self.disconnect()
+            error_msg = f"❌ Erreur RCON : {str(e)}"
+            self.discord_logger.error(f"RCON command failed '{command}': {e}")
+            return error_msg
 
     def disconnect(self):
         if self.socket:
