@@ -1,0 +1,26 @@
+# Virtual environment
+.venv/
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+
+# Environment files
+.env
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+
+# Minecraft data (already mounted as volume)
+minecraftNewWorldData/
+
+# Development files
+dev.sh
+
+# Docker files
+docker-compose.yaml
