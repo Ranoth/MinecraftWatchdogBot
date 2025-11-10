@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.1.1...v1.1.2) (2025-11-10)
+
+
+### Bug Fixes
+
+* Monitoring not crashing anymore ([209b6db](https://github.com/Ranoth/MinecraftWatchdogBot/commit/209b6db97f33f79549864abcc1ba47fedc696e33))
+
 ## [1.1.1](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.1.0...v1.1.1) (2025-11-10)
 
 
