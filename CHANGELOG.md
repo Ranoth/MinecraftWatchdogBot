@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.0.1...v1.1.0) (2025-11-10)
+
+
+### Features
+
+* Add error messages for users ([d6d638a](https://github.com/Ranoth/MinecraftWatchdogBot/commit/d6d638adfdb2d00e61a2592feaac4190fc370b58))
+* Add status command that runs tick query ([d6d638a](https://github.com/Ranoth/MinecraftWatchdogBot/commit/d6d638adfdb2d00e61a2592feaac4190fc370b58))
+
 ## [1.0.1](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.0.0...v1.0.1) (2025-11-10)
 
 
