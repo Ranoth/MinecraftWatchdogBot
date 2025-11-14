@@ -1,9 +1,7 @@
 import asyncio
-import json
 import logging
 import docker
 from docker.errors import DockerException
-import threading
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -15,6 +13,8 @@ class DockerMonitor:
         self.waiting_for_startup = False  # Flag to track if we're waiting for server ready
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.loop = None
+        
+        
         
     async def start_monitoring(self):
         """Start monitoring Docker events"""
@@ -62,7 +62,7 @@ class DockerMonitor:
             return
 
         if action == "die":
-            await self.channel.send("🔴 **Le serveur Minecraft s'arrête...**")
+            await self.channel.send("🔴 **Le serveur s'arrête...**")
             logging.info(f"Container {container_name} stopped")
             self.waiting_for_startup = False
 

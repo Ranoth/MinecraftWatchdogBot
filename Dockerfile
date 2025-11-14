@@ -20,6 +20,7 @@ COPY main.py .
 COPY rcon_client.py .
 COPY monitoring_client.py .
 COPY docker_monitor.py .
+COPY death_messages.py .
 
 # Create a non-root user for security (but we'll run as root for Docker socket access)
 RUN useradd -m -u 1000 botuser && chown -R botuser:botuser /app
