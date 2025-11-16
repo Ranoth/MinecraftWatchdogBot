@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.2.0...v1.2.1) (2025-11-16)
+
+
+### Bug Fixes
+
+* Java stacktrace multiline logs do no longer temporarily stop bot from monitoring logs. ([1048951](https://github.com/Ranoth/MinecraftWatchdogBot/commit/10489516c6fc8873ba4b8db5dcd8e95a51f93474))
+
 ## [1.2.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.1.2...v1.2.0) (2025-11-14)
 
 
