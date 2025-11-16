@@ -1,13 +1,13 @@
 import socket
 import asyncio
 import struct
+import logging
 
 class RCONClient:
-    def __init__(self, host, port, password, discord_logger):
+    def __init__(self, host, port, password):
         self.host = host
         self.port = port
         self.password = password
-        self.discord_logger = discord_logger
         self.socket = None
         self.request_id = 0
 
@@ -24,10 +24,10 @@ class RCONClient:
             auth_response = await self._send_packet(3, self.password)  # Type 3 = AUTH
             if auth_response is None:
                 raise Exception("Authentication failed")
-            self.discord_logger.debug("RCON connection established")
+            logging.debug("RCON connection established")
             return True
         except Exception as e:
-            self.discord_logger.error(f"RCON connection failed: {e}")
+            logging.error(f"RCON connection failed: {e}")
             if self.socket:
                 self.socket.close()
                 self.socket = None
@@ -39,32 +39,32 @@ class RCONClient:
             response = await self._send_packet(2, command)
             if response is not None:
                 self.disconnect()
-                self.discord_logger.debug(f"RCON command executed: {command}")
+                logging.debug(f"RCON command executed: {command}")
                 return response
             else:
                 self.disconnect()
                 error_msg = f"❌ Pas de réponse reçue pour la commande: `{command}`"
-                self.discord_logger.error(f"RCON command failed - no response: {command}")
+                logging.error(f"RCON command failed - no response: {command}")
                 return error_msg
         except ConnectionRefusedError as e:
             self.disconnect()
             error_msg = "❌ Connection refusée, le serveur est peut-être hors ligne"
-            self.discord_logger.error(f"RCON connection refused for command '{command}': {e}")
+            logging.error(f"RCON connection refused for command '{command}': {e}")
             return error_msg
         except TimeoutError as e:
             self.disconnect()
             error_msg = "❌ Délai de connexion dépassé : le serveur ne répond pas"
-            self.discord_logger.error(f"RCON timeout for command '{command}': {e}")
+            logging.error(f"RCON timeout for command '{command}': {e}")
             return error_msg
         except OSError as e:
             self.disconnect()
             error_msg = f"❌ Erreur réseau : {str(e)}"
-            self.discord_logger.error(f"RCON network error for command '{command}': {e}")
+            logging.error(f"RCON network error for command '{command}': {e}")
             return error_msg
         except Exception as e:
             self.disconnect()
             error_msg = f"❌ Erreur RCON : {str(e)}"
-            self.discord_logger.error(f"RCON command failed '{command}': {e}")
+            logging.error(f"RCON command failed '{command}': {e}")
             return error_msg
 
     def disconnect(self):

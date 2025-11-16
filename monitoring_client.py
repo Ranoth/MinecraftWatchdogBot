@@ -17,11 +17,7 @@ class LogMonitor:
         self.channel = channel
         self.docker_monitor = docker_monitor
         self.dev = os.getenv("DEV", "false") == "true"
-        self.log_file = (
-            "./minecraftNewWorldData/logs/latest.log"
-            if self.dev
-            else "/data/latest.log"
-        )
+        self.log_file = "/data/latest.log"
         self.monitoring = False
 
     def set_docker_monitor(self, docker_monitor):
@@ -79,15 +75,27 @@ class LogMonitor:
                     logging.warning("Log file disappeared, restarting monitoring...")
                     break
 
-                line = await f.readline()
-                if line:
-                    current_position = await f.tell()
-                    await self.process_log_line(line.strip())
-                else:
+                try:
+                    line = await f.readline()
+                    if line is not None and line:
+                        current_position = await f.tell()
+                        line_content = line.strip()
+                        if line_content:  # Only process non-empty lines
+                            logging.debug(f"Read log line: {line_content}")
+                            await self.process_log_line(line_content)
+                    else:
+                        await asyncio.sleep(1)
+                except Exception as e:
+                    logging.error(f"Error reading log line: {e}")
                     await asyncio.sleep(1)
+                    continue
 
     async def process_log_line(self, line):
         """Process a single log line for events"""
+        # Skip processing stack trace lines (they don't contain game events)
+        if self.is_stack_trace_line(line):
+            return
+
         # Check for important events
         if "joined the game" in line:
             player_name, _ = self.extract_player_name_and_message(line)
@@ -106,6 +114,8 @@ class LogMonitor:
                 await self.channel.send(f"💬 **{player_name}**: {message}")
 
         # Check for server ready message
+        # [08:45:01] [Server thread/INFO]: Done (1.578s)! For help, type "help"
+        # [06:45:48] [Server thread/INFO]: Done (22.025s)! For help, type "help"
         elif (
             "Done (" in line
             and "For help, type" in line
@@ -131,12 +141,30 @@ class LogMonitor:
 
     def is_chat_message(self, log_line):
         """Check if the log line is a chat message"""
+        if (
+            "<" in log_line
+            and ">" in log_line
+            and not death_messages.is_death_message(self.cleanup_log_line(log_line))
+        ):
+            return True
+        return False
+
+    def is_stack_trace_line(self, log_line):
+        """Check if the log line is part of a Java stack trace"""
         try:
+            stripped = log_line.strip()
             return (
-                "<" in log_line
-                and ">" in log_line
-                and "Async Chat Thread" in log_line
-                and "/INFO]:" in log_line
+                stripped.startswith("at ")  # Stack trace frame
+                or stripped.startswith("Caused by:")  # Exception cause
+                or stripped.startswith("...")  # Stack trace continuation
+                or (
+                    not stripped.startswith("[")
+                    and ("Exception" in stripped or "Error" in stripped)
+                    and ":" in stripped
+                    and "/INFO]:" not in stripped
+                    and "/WARN]:" not in stripped
+                    and "/ERROR]:" not in stripped
+                )  # Exception message without timestamp
             )
         except Exception:
             return False

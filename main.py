@@ -16,10 +16,13 @@ rcon_port = int(os.getenv("RCON_PORT", 25575))
 rcon_password = os.getenv("RCON_PASSWORD")
 dev_mode = os.getenv("DEV", "false") == "true"
 
+# Ensure the data directory exists
+os.makedirs("/app/data", exist_ok=True)
+
 logging.basicConfig(
     level=logging.DEBUG if dev_mode else logging.INFO,
     handlers=[
-        logging.FileHandler(filename="discord.log", encoding="utf-8", mode="w"),
+        logging.FileHandler(filename="/app/data/discord.log", encoding="utf-8", mode="w"),
     ],
     format="%(asctime)s:%(levelname)s:%(name)s: %(message)s",
 )
@@ -30,7 +33,7 @@ intents.message_content = True
 intents.members = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
-rcon_client = RCONClient(rcon_host, rcon_port, rcon_password, discord_logger)
+rcon_client = RCONClient(rcon_host, rcon_port, rcon_password)
 
 # Global variable to store task references
 log_monitor_task = None
