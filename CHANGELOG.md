@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.1.2...v1.2.0) (2025-11-14)
+
+
+### Features
+
+* Add death tracking ([3cf36f0](https://github.com/Ranoth/MinecraftWatchdogBot/commit/3cf36f0e0e66129543ab4c8578734698e915bd00))
+
 ## [1.1.2](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.1.1...v1.1.2) (2025-11-10)
 
 
