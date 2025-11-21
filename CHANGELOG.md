@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.2.1...v1.2.2) (2025-11-21)
+
+
+### Bug Fixes
+
+* Error reading ghost log lines no longer hinder the bot's ability to read valid lines ([b7443e4](https://github.com/Ranoth/MinecraftWatchdogBot/commit/b7443e4d69dbc52225726f9d245c6ae6abda5b5c))
+
 ## [1.2.1](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.2.0...v1.2.1) (2025-11-16)
 
 
