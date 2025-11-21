@@ -48,22 +48,18 @@ class LogMonitor:
             await asyncio.sleep(5)
             return
 
-        # Get initial file stats
         initial_stat = os.stat(self.log_file)
         current_position = 0
 
         async with aiofiles.open(self.log_file, mode="r") as f:
-            # Move to end of existing content
             await f.seek(0, 2)
             current_position = await f.tell()
             logging.info(f"Started monitoring from position {current_position}")
 
             while self.monitoring:
-                # Check if file still exists and hasn't been rotated
                 try:
                     current_stat = os.stat(self.log_file)
 
-                    # Check if file was rotated (inode changed or size decreased)
                     if (
                         current_stat.st_ino != initial_stat.st_ino
                         or current_stat.st_size < current_position
@@ -77,26 +73,21 @@ class LogMonitor:
 
                 try:
                     line = await f.readline()
-                    if line is not None and line:
+                    if line is not None and line != "":
                         current_position = await f.tell()
-                        line_content = line.strip()
-                        if line_content:  # Only process non-empty lines
-                            logging.debug(f"Read log line: {line_content}")
-                            await self.process_log_line(line_content)
+                        logging.debug(f"Read log line: {line}, of type: {type(line)}")
+                        message, info = self.cleanup_log_line(line)
+                        await self.process_log_line(message, info)
                     else:
                         await asyncio.sleep(1)
                 except Exception as e:
-                    logging.error(f"Error reading log line: {e}")
-                    await asyncio.sleep(1)
+                    logging.debug(f"Error reading log line: {e}")
+                    # await asyncio.sleep(1)
                     continue
 
-    async def process_log_line(self, line):
+    async def process_log_line(self, line, info):
         """Process a single log line for events"""
-        # Skip processing stack trace lines (they don't contain game events)
-        if self.is_stack_trace_line(line):
-            return
 
-        # Check for important events
         if "joined the game" in line:
             player_name, _ = self.extract_player_name_and_message(line)
             await self.channel.send(f"🟢 **{player_name}** s'est connecté.")
@@ -107,36 +98,26 @@ class LogMonitor:
 
         elif self.is_chat_message(line):
             player_name, message = self.extract_player_name_and_message(line)
-            if player_name and message:
-                # Remove < and > from player name if present
-                if player_name.startswith("<") and player_name.endswith(">"):
-                    player_name = player_name[1:-1]
-                await self.channel.send(f"💬 **{player_name}**: {message}")
+            if player_name.startswith("<") and player_name.endswith(">"):
+                player_name = player_name[1:-1]
+            await self.channel.send(f"💬 **{player_name}**: {message}")
 
-        # Check for server ready message
         # [08:45:01] [Server thread/INFO]: Done (1.578s)! For help, type "help"
         # [06:45:48] [Server thread/INFO]: Done (22.025s)! For help, type "help"
-        elif (
-            "Done (" in line
-            and "For help, type" in line
-            and "[Server thread/INFO]:" in line
-        ):
+        elif "Done (" in line and "For help, type" in line:
             logging.info("Server startup complete detected from logs")
             if self.docker_monitor:
                 self.docker_monitor.notify_server_ready()
 
-            # Always send ready message as fallback (in case Docker monitoring fails)
             await self.channel.send("🟢 **Le serveur est prêt !**")
             logging.info("Server ready notification sent directly")
 
         # Check is death message
-        elif death_messages.is_death_message(self.cleanup_log_line(line)):
-            # Extract the actual message part from the log line
+        elif death_messages.is_death_message(line):
             player_name, message = self.extract_player_name_and_message(line)
             await self.channel.send(f"💀 **{player_name}** {message}")
 
         elif "WARN" in line or "ERROR" in line:
-            # Optionally send warning/error alerts
             pass
 
     def is_chat_message(self, log_line):
@@ -144,45 +125,26 @@ class LogMonitor:
         if (
             "<" in log_line
             and ">" in log_line
-            and not death_messages.is_death_message(self.cleanup_log_line(log_line))
+            and not death_messages.is_death_message(log_line)
         ):
             return True
         return False
 
-    def is_stack_trace_line(self, log_line):
-        """Check if the log line is part of a Java stack trace"""
-        try:
-            stripped = log_line.strip()
-            return (
-                stripped.startswith("at ")  # Stack trace frame
-                or stripped.startswith("Caused by:")  # Exception cause
-                or stripped.startswith("...")  # Stack trace continuation
-                or (
-                    not stripped.startswith("[")
-                    and ("Exception" in stripped or "Error" in stripped)
-                    and ":" in stripped
-                    and "/INFO]:" not in stripped
-                    and "/WARN]:" not in stripped
-                    and "/ERROR]:" not in stripped
-                )  # Exception message without timestamp
-            )
-        except Exception:
-            return False
-
     def extract_player_name_and_message(self, log_line):
         """Extract player name and message from log line"""
-        clean_log = self.cleanup_log_line(log_line)
-        if clean_log:
-            player_name = clean_log.split()[0]
-            message = " ".join(clean_log.split()[1:])
+        if log_line:
+            player_name = log_line.split()[0]
+            message = " ".join(log_line.split()[1:])
             print(message)
             return player_name, message
         return self.UNKNOWN_PLAYER, None
 
     def cleanup_log_line(self, log_line):
-        """Clean up log line by removing player names"""
-        parts = log_line.split(": ")
+        """Clean up log line by removing io infos"""
+
+        parts = str(log_line).strip().split(": ")
         if len(parts) >= 2:
-            message = parts[1].strip()
-            return message
-        return None
+            message = parts[1]
+            info = parts[0]
+            return message, info
+        return None, None

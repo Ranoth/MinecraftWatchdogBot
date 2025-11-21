@@ -1,18 +1,13 @@
-# Use Python 3.11 slim image for smaller size
 FROM python:3.11-slim
 
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first to leverage Docker cache
 COPY requirements.txt .
 
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
@@ -22,12 +17,5 @@ COPY monitoring_client.py .
 COPY docker_monitor.py .
 COPY death_messages.py .
 
-# Create a non-root user for security (but we'll run as root for Docker socket access)
-RUN useradd -m -u 1000 botuser && chown -R botuser:botuser /app
-
-# Run as root to access Docker socket
-# USER botuser
-
-# Run the application
 CMD ["python", "main.py"]
 

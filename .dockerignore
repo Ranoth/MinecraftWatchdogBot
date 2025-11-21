@@ -18,6 +18,7 @@ README.md
 
 # Minecraft data (already mounted as volume)
 minecraftNewWorldData/
+minecraftModdedData/
 
 # Development files
 dev.sh

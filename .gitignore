@@ -140,6 +140,7 @@ banned-*.json
 usercache.json
 eula.txt
 minecraftNewWorldData/
+minecraftModdedData/
 
 # docker-compose file
 docker-compose.yaml

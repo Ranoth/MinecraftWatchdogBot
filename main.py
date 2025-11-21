@@ -11,7 +11,7 @@ from docker_monitor import DockerMonitor
 
 load_dotenv()
 discord_token = os.getenv("DISCORD_TOKEN")
-rcon_host = os.getenv("RCON_HOST", "localhost")
+host = os.getenv("HOST", "localhost")
 rcon_port = int(os.getenv("RCON_PORT", 25575))
 rcon_password = os.getenv("RCON_PASSWORD")
 dev_mode = os.getenv("DEV", "false") == "true"
@@ -33,7 +33,7 @@ intents.message_content = True
 intents.members = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
-rcon_client = RCONClient(rcon_host, rcon_port, rcon_password)
+rcon_client = RCONClient(host, rcon_port, rcon_password)
 
 # Global variable to store task references
 log_monitor_task = None
@@ -53,16 +53,13 @@ async def on_ready():
 
     if channel:
         # Create docker monitor
-        docker_monitor = DockerMonitor("minecraftNewWorld", channel)
+        docker_monitor = DockerMonitor(host, channel)
 
-        # Create log monitor and connect it to docker monitor
         log_monitor = LogMonitor(channel, docker_monitor)
 
-        # Start log monitoring - keep reference to prevent garbage collection
         global log_monitor_task, docker_monitor_task
         log_monitor_task = asyncio.create_task(log_monitor.start_monitoring())
 
-        # Start Docker event monitoring - keep reference to prevent garbage collection
         docker_monitor_task = asyncio.create_task(docker_monitor.start_monitoring())
     else:
         discord_logger.error(f"Channel with ID {channel_id} not found")
