@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.3.2...v1.4.0) (2025-11-22)
+
+
+### Features
+
+* Add health check ([e7f39bb](https://github.com/Ranoth/MinecraftWatchdogBot/commit/e7f39bbb4a0c70ffa6e898f76d56def1843ed088))
+
 ## [1.3.2](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.3.1...v1.3.2) (2025-11-22)
 
 
