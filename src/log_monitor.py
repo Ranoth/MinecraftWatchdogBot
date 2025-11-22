@@ -13,13 +13,14 @@ load_dotenv()
 class LogMonitor:
     UNKNOWN_PLAYER = "Unknown Player"
 
-    def __init__(self, log_file, channel, docker_monitor=None, friendly_name=None):
+    def __init__(self, log_file, channel, docker_monitor=None, friendly_name=None, host=None):
         self.channel = channel
         self.docker_monitor = docker_monitor
         self.dev = os.getenv("DEV", "false") == "true"
         self.log_file = log_file
         self.monitoring = False
         self.friendly_name = friendly_name
+        self.host = host
 
     def set_docker_monitor(self, docker_monitor):
         """Set reference to docker monitor for communication"""
@@ -28,7 +29,7 @@ class LogMonitor:
     async def start_monitoring(self):
         """Start monitoring server logs"""
         logging.info(
-            f"Starting log monitoring for: {self.log_file} ({self.friendly_name})"
+            f"Starting log monitoring for: {self.log_file} ({self.host})"
         )
         self.monitoring = True
 
@@ -57,7 +58,7 @@ class LogMonitor:
         async with aiofiles.open(self.log_file, mode="r") as f:
             await f.seek(0, 2)
             current_position = await f.tell()
-            logging.info(f"Started monitoring from position {current_position}")
+            logging.info(f"Started monitoring from position {current_position} in {self.log_file} on host {self.host}")
 
             while self.monitoring:
                 try:
@@ -68,13 +69,13 @@ class LogMonitor:
                         or current_stat.st_size < current_position
                     ):
                         logging.info(
-                            f"Log file rotated, restarting monitoring... ({self.log_file})"
+                            f"Log file rotated, restarting monitoring... ({self.log_file}) on host {self.host}"
                         )
                         break
 
                 except FileNotFoundError:
                     logging.warning(
-                        f"Log file disappeared, restarting monitoring... ({self.log_file})"
+                        f"Log file disappeared, restarting monitoring... ({self.log_file}) on host {self.host}"
                     )
                     break
 
@@ -82,9 +83,9 @@ class LogMonitor:
                     line = await f.readline()
                     if line is not None and line != "":
                         current_position = await f.tell()
-                        logging.debug(f"Read log line: {line}, of type: {type(line)}")
-                        message, info = self.cleanup_log_line(line)
-                        await self.process_log_line(message, info)
+                        logging.debug(f"Read log line: {line}, of type: {type(line)} from {self.log_file} on host {self.host}")
+                        message = self.cleanup_log_line(line)
+                        await self.process_log_line(message)
                     else:
                         await asyncio.sleep(1)
                 except Exception as e:
@@ -92,7 +93,7 @@ class LogMonitor:
                     # await asyncio.sleep(1)
                     continue
 
-    async def process_log_line(self, line, info):
+    async def process_log_line(self, line):
         """Process a single log line for events"""
 
         if "joined the game" in line:

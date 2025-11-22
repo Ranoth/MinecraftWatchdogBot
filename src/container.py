@@ -25,7 +25,7 @@ class Container:
 
         self.docker_monitor = DockerMonitor(self.host, self.channel, self.name)
         self.log_monitor = LogMonitor(
-            self.log_path, self.channel, self.docker_monitor, self.name
+            self.log_path, self.channel, self.docker_monitor, self.name, self.host
         )
         self.rcon_client = RCONClient(self.host, self.rcon_port, self.rcon_password)
 
