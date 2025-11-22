@@ -141,6 +141,7 @@ usercache.json
 eula.txt
 minecraftNewWorldData/
 minecraftModdedData/
+bot_*/
 
 # docker-compose file
 docker-compose.yaml

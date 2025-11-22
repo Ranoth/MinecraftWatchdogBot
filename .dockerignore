@@ -22,6 +22,7 @@ minecraftModdedData/
 
 # Development files
 dev.sh
+bot_*/
 
 # Docker files
 docker-compose.yaml

@@ -1,9 +1,9 @@
 import asyncio
 import aiofiles
+import discord
 from dotenv import load_dotenv
 import os
 import logging
-import re
 
 import death_messages
 
@@ -13,12 +13,13 @@ load_dotenv()
 class LogMonitor:
     UNKNOWN_PLAYER = "Unknown Player"
 
-    def __init__(self, channel, docker_monitor=None):
+    def __init__(self, log_file, channel, docker_monitor=None, friendly_name=None):
         self.channel = channel
         self.docker_monitor = docker_monitor
         self.dev = os.getenv("DEV", "false") == "true"
-        self.log_file = "/data/latest.log"
+        self.log_file = log_file
         self.monitoring = False
+        self.friendly_name = friendly_name
 
     def set_docker_monitor(self, docker_monitor):
         """Set reference to docker monitor for communication"""
@@ -26,7 +27,9 @@ class LogMonitor:
 
     async def start_monitoring(self):
         """Start monitoring server logs"""
-        logging.info(f"Starting log monitoring for: {self.log_file}")
+        logging.info(
+            f"Starting log monitoring for: {self.log_file} ({self.friendly_name})"
+        )
         self.monitoring = True
 
         while self.monitoring:
@@ -64,11 +67,15 @@ class LogMonitor:
                         current_stat.st_ino != initial_stat.st_ino
                         or current_stat.st_size < current_position
                     ):
-                        logging.info("Log file rotated, restarting monitoring...")
+                        logging.info(
+                            f"Log file rotated, restarting monitoring... ({self.log_file})"
+                        )
                         break
 
                 except FileNotFoundError:
-                    logging.warning("Log file disappeared, restarting monitoring...")
+                    logging.warning(
+                        f"Log file disappeared, restarting monitoring... ({self.log_file})"
+                    )
                     break
 
                 try:
@@ -90,17 +97,34 @@ class LogMonitor:
 
         if "joined the game" in line:
             player_name, _ = self.extract_player_name_and_message(line)
-            await self.channel.send(f"🟢 **{player_name}** s'est connecté.")
+
+            embed = discord.Embed(
+                color=0x00FF00,
+                title=f"{player_name} s'est connecté.",
+            )
+            embed.set_footer(text=self.friendly_name)
+            await self.channel.send(embed=embed)
 
         elif "left the game" in line:
             player_name, _ = self.extract_player_name_and_message(line)
-            await self.channel.send(f"🔴 **{player_name}** s'est déconnecté.")
+            embed = discord.Embed(
+                color=0xFF0000,
+                title=f"{player_name} s'est déconnecté.",
+            )
+            embed.set_footer(text=self.friendly_name)
+            await self.channel.send(embed=embed)
 
         elif self.is_chat_message(line):
             player_name, message = self.extract_player_name_and_message(line)
             if player_name.startswith("<") and player_name.endswith(">"):
                 player_name = player_name[1:-1]
-            await self.channel.send(f"💬 **{player_name}**: {message}")
+            embed = discord.Embed(
+                color=0xFFFFFF,
+                title=f"{player_name}: ",
+                description=f"💬 {message}",
+            )
+            embed.set_footer(text=self.friendly_name)
+            await self.channel.send(embed=embed)
 
         # [08:45:01] [Server thread/INFO]: Done (1.578s)! For help, type "help"
         # [06:45:48] [Server thread/INFO]: Done (22.025s)! For help, type "help"
@@ -109,13 +133,24 @@ class LogMonitor:
             if self.docker_monitor:
                 self.docker_monitor.notify_server_ready()
 
-            await self.channel.send("🟢 **Le serveur est prêt !**")
+            embed = discord.Embed(
+                color=0x00FF00,
+                title="Le serveur est prêt.",
+            )
+            embed.set_footer(text=self.friendly_name)
+            await self.channel.send(embed=embed)
             logging.info("Server ready notification sent directly")
 
         # Check is death message
         elif death_messages.is_death_message(line):
             player_name, message = self.extract_player_name_and_message(line)
-            await self.channel.send(f"💀 **{player_name}** {message}")
+            embed = discord.Embed(
+                color=0x000000,
+                title=f"💀 {player_name} est mort: ",
+                description=f"{player_name}{message}",
+            )
+            embed.set_footer(text=self.friendly_name)
+            await self.channel.send(embed=embed)
 
         elif "WARN" in line or "ERROR" in line:
             pass

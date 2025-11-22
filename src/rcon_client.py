@@ -3,6 +3,7 @@ import asyncio
 import struct
 import logging
 
+
 class RCONClient:
     def __init__(self, host, port, password):
         self.host = host
@@ -105,3 +106,25 @@ class RCONClient:
             "utf-8", errors="ignore"
         )
         return response_string.strip()
+
+    async def send_command_wrapper(self, *, command: str):
+        response = await self.send_command(command)
+
+        if response.startswith("❌"):
+            return response
+
+        cleaned_response = response.strip()
+
+        import re
+
+        cleaned_response = re.sub(r"\.(\s*)([A-Z])", r".\n\2", cleaned_response)
+
+        cleaned_response = re.sub(r":(\s*)([0-9A-Za-z])", r":\n\2", cleaned_response)
+
+        cleaned_response = re.sub(r"\s+", " ", cleaned_response)
+        cleaned_response = re.sub(r" *\n *", "\n", cleaned_response)
+        cleaned_response = re.sub(r"\n{3,}", "\n\n", cleaned_response)
+
+        if len(cleaned_response) > 1900:
+            cleaned_response = cleaned_response[:1900] + "\n...[truncated]"
+        return f"\n{cleaned_response}\n"

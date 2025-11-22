@@ -11,11 +11,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY main.py .
-COPY rcon_client.py .
-COPY monitoring_client.py .
-COPY docker_monitor.py .
-COPY death_messages.py .
+COPY src/ ./src/
 
-CMD ["python", "main.py"]
+CMD ["python", "src/main.py"]
 
