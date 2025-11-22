@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.3.1...v1.3.2) (2025-11-22)
+
+
+### Bug Fixes
+
+* Remove error trying to channel ([ff31377](https://github.com/Ranoth/MinecraftWatchdogBot/commit/ff31377a292fc17bc7e4706b38ebc0b558ca3e12))
+
 ## [1.3.1](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.3.0...v1.3.1) (2025-11-22)
 
 
