@@ -152,9 +152,6 @@ class LogMonitor:
             embed.set_footer(text=self.friendly_name)
             await self.channel.send(embed=embed)
 
-        elif "WARN" in line or "ERROR" in line:
-            pass
-
     def is_chat_message(self, log_line):
         """Check if the log line is a chat message"""
         if death_messages.is_death_message(log_line):
