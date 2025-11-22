@@ -13,13 +13,14 @@ class ConfigParser:
     @staticmethod
     def load_env():
         class EnvConfig:
-            discord_token = os.getenv("DISCORD_TOKEN")
-            host = os.getenv("HOST", "localhost")
-            rcon_port = int(os.getenv("RCON_PORT", 25575))
-            rcon_password = os.getenv("RCON_PASSWORD")
-            dev_mode = os.getenv("DEV", "false") == "true"
+            def __init__(self):
+                self.discord_token = os.getenv("DISCORD_TOKEN")
+                self.dev_mode = os.getenv("DEV", "false") == "true"
 
-        return EnvConfig
+                if self.discord_token == "" or self.discord_token is None:
+                    raise ValueError("DISCORD_TOKEN environment variable is not set")
+
+        return EnvConfig()
 
     def load_config(self):
         return self.containers

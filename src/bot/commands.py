@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from rcon_client import RCONClient
 
 
 class CommandsCog(commands.Cog):
@@ -8,6 +7,7 @@ class CommandsCog(commands.Cog):
         self.bot = bot
         self.envvars = envvars
         self.discord_bot = discord_bot
+
     @commands.command(name="list", brief="Liste les joueurs connectés au serveur.")
     async def list_players(self, ctx):
         # Use the first container's rcon_client, or iterate through all
@@ -18,7 +18,9 @@ class CommandsCog(commands.Cog):
         players = await container.rcon_client.send_command_wrapper(command="list")
         await ctx.send(players)
 
-    @commands.command(name="whitelist", brief="Ajoute un joueur à la whitelist du serveur.")
+    @commands.command(
+        name="whitelist", brief="Ajoute un joueur à la whitelist du serveur."
+    )
     async def whitelist_player(self, ctx, player_name: str):
         if not self.discord_bot.containers:
             await ctx.send("Aucun serveur configuré.")

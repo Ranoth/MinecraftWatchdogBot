@@ -1,7 +1,6 @@
 import logging
 import os
 
-from container import Container
 from config_parser import ConfigParser
 
 
@@ -33,6 +32,9 @@ def init():
     discord_logger = logging.getLogger("discord")
     discord_logger.setLevel(root_level)
     discord_logger.propagate = True
+
+    aiohttp_logger = logging.getLogger("aiohttp.access")
+    aiohttp_logger.setLevel(logging.DEBUG if envvars.dev_mode else logging.WARNING)
 
     if envvars.discord_token is None:
         raise ValueError("DISCORD_TOKEN environment variable is not set")

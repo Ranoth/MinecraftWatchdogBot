@@ -7,7 +7,9 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 class DockerMonitor:
-    def __init__(self, container_name, discord_channel, friendly_name):
+    def __init__(
+        self, container_name, discord_channel, friendly_name, ready_event=None
+    ):
         self.container_name = container_name
         self.channel = discord_channel
         self.friendly_name = friendly_name
@@ -15,6 +17,7 @@ class DockerMonitor:
         self.waiting_for_startup = False
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.loop = None
+        self.ready_event = ready_event
 
     async def start_monitoring(self):
         """Start monitoring Docker events"""
@@ -31,6 +34,8 @@ class DockerMonitor:
                 logging.info(
                     f"Starting Docker event monitoring for {self.container_name}"
                 )
+                if self.ready_event:
+                    self.ready_event.set()
 
                 for event in self.client.events(
                     decode=True,
