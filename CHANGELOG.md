@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.2.2...v1.3.0) (2025-11-22)
+
+
+### Features
+
+* Add ability to monitor logs for multiple minecraft servers at the same time. Need to fix commands ([d0147ac](https://github.com/Ranoth/MinecraftWatchdogBot/commit/d0147ac0874e977e1906de609a79dc0f5d6b8d51))
+
 ## [1.2.2](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.2.1...v1.2.2) (2025-11-21)
 
 
