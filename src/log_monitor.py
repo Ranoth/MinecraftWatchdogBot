@@ -147,7 +147,7 @@ class LogMonitor:
             embed = discord.Embed(
                 color=0x000000,
                 title=f"💀 {player_name} est mort: ",
-                description=f"{player_name}{message}",
+                description=f"{player_name} {message}",
             )
             embed.set_footer(text=self.friendly_name)
             await self.channel.send(embed=embed)
@@ -157,10 +157,12 @@ class LogMonitor:
 
     def is_chat_message(self, log_line):
         """Check if the log line is a chat message"""
+        if death_messages.is_death_message(log_line):
+            return False
+        
         if (
-            "<" in log_line
+            log_line.startswith("<")
             and ">" in log_line
-            and not death_messages.is_death_message(log_line)
         ):
             return True
         return False
