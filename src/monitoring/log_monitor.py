@@ -1,10 +1,10 @@
 import asyncio
 import aiofiles
-import discord
 import os
 import logging
 
 import monitoring.death_messages as death_messages
+from messager import Messager
 
 
 class LogMonitor:
@@ -14,18 +14,23 @@ class LogMonitor:
         self,
         log_file,
         channel,
-        docker_monitor=None,
-        friendly_name=None,
-        host=None,
-        ready_event=None,
+        docker_monitor,
+        friendly_name,
+        host,
+        ready_event,
+        messager: Messager,
     ):
         self.channel = channel
         self.docker_monitor = docker_monitor
         self.log_file = log_file
         self.monitoring = False
+        self.messager = messager
         self.friendly_name = friendly_name
         self.host = host
         self.ready_event = ready_event
+        self.last_startup_log = None
+        self.last_update_time = 0
+        self.startup_update_task = None
 
     def set_docker_monitor(self, docker_monitor):
         """Set reference to docker monitor for communication"""
@@ -43,7 +48,7 @@ class LogMonitor:
                 logging.error(f"Log monitoring error: {e}")
                 await asyncio.sleep(5)  # Wait before retrying
 
-    async def stop_monitoring(self):
+    def stop_monitoring(self):
         """Stop monitoring server logs"""
         self.monitoring = False
 
@@ -93,7 +98,7 @@ class LogMonitor:
                         logging.debug(f"{self.host}: {line}")
                         logging.debug(self.channel)
                         message, _ = self.cleanup_log_line(line)
-                        await self.process_log_line(message)
+                        await self.process_log_line(message, line)
                     else:
                         await asyncio.sleep(1)
                 except Exception as e:
@@ -101,67 +106,85 @@ class LogMonitor:
                     # await asyncio.sleep(1)
                     continue
 
-    async def process_log_line(self, line):
+    async def process_log_line(self, clean_line, full_line=""):
         """Process a single log line for events"""
 
-        if "joined the game" in line:
-            player_name, _ = self.extract_player_name_and_message(line)
-
+        if "joined the game" in clean_line:
+            player_name, _ = self.extract_player_name_and_message(clean_line)
             logging.debug(f"Player joined detected: {player_name}")
 
-            embed = discord.Embed(
-                color=0x00FF00,
+            await self.messager.send_embed(
                 title=f"{player_name} s'est connecté.",
+                footer=self.friendly_name,
+                color=0x00FF00,
             )
-            embed.set_footer(text=self.friendly_name)
-            await self.channel.send(embed=embed)
 
-        elif "left the game" in line:
-            player_name, _ = self.extract_player_name_and_message(line)
-            embed = discord.Embed(
-                color=0xFF0000,
+        elif "left the game" in clean_line:
+            player_name, _ = self.extract_player_name_and_message(clean_line)
+            await self.messager.send_embed(
                 title=f"{player_name} s'est déconnecté.",
+                footer=self.friendly_name,
+                color=0xFF0000,
             )
-            embed.set_footer(text=self.friendly_name)
-            await self.channel.send(embed=embed)
-
-        elif self.is_chat_message(line):
-            player_name, message = self.extract_player_name_and_message(line)
+        elif self.is_chat_message(clean_line):
+            player_name, message = self.extract_player_name_and_message(clean_line)
             if player_name.startswith("<") and player_name.endswith(">"):
                 player_name = player_name[1:-1]
-            embed = discord.Embed(
-                color=0xFFFFFF,
+            await self.messager.send_embed(
                 title=f"{player_name}: ",
                 description=f"💬 {message}",
+                footer=self.friendly_name,
+                color=0xFFFFFF,
             )
-            embed.set_footer(text=self.friendly_name)
-            await self.channel.send(embed=embed)
 
         # [08:45:01] [Server thread/INFO]: Done (1.578s)! For help, type "help"
         # [06:45:48] [Server thread/INFO]: Done (22.025s)! For help, type "help"
-        elif "Done (" in line and "For help, type" in line:
+        elif "Done (" in clean_line and "For help, type" in clean_line:
             logging.info("Server startup complete detected from logs")
             if self.docker_monitor:
                 self.docker_monitor.notify_server_ready()
 
-            embed = discord.Embed(
-                color=0x00FF00,
-                title="Le serveur est prêt.",
+            await self.messager.send_embed(
+                title="Le serveur démarre.",
+                description=full_line,
+                footer=self.friendly_name,
+                color=0xFFFF00,
+                keep=True,
             )
-            embed.set_footer(text=self.friendly_name)
-            await self.channel.send(embed=embed)
+
+            await self.messager.send_embed(
+                title="Le serveur est prêt.",
+                footer=self.friendly_name,
+                color=0x00FF00,
+            )
+
+            self.messager.clear_kept_messages()
+
             logging.info("Server ready notification sent directly")
 
         # Check is death message
-        elif death_messages.is_death_message(line):
-            player_name, message = self.extract_player_name_and_message(line)
-            embed = discord.Embed(
-                color=0x000000,
+        elif death_messages.is_death_message(clean_line):
+            player_name, message = self.extract_player_name_and_message(clean_line)
+            await self.messager.send_embed(
                 title=f"💀 {player_name} est mort: ",
                 description=f"{player_name} {message}",
+                footer=self.friendly_name,
+                color=0x000000,
             )
-            embed.set_footer(text=self.friendly_name)
-            await self.channel.send(embed=embed)
+
+        if self.docker_monitor.waiting_for_startup:
+            self.last_startup_log = full_line
+            current_time = asyncio.get_event_loop().time()
+
+            if current_time - self.last_update_time >= 4:
+                self.last_update_time = current_time
+                await self.messager.send_embed(
+                    title="Le serveur démarre.",
+                    description=full_line,
+                    footer=self.friendly_name,
+                    color=0xFFFF00,
+                    keep=True,
+                )
 
     def is_chat_message(self, log_line):
         """Check if the log line is a chat message"""

@@ -1,14 +1,19 @@
 import asyncio
 import logging
-import discord
 import docker
 from docker.errors import DockerException
 from concurrent.futures import ThreadPoolExecutor
+from messager import Messager
 
 
 class DockerMonitor:
     def __init__(
-        self, container_name, discord_channel, friendly_name, ready_event=None
+        self,
+        container_name,
+        discord_channel,
+        friendly_name,
+        ready_event,
+        messager: Messager,
     ):
         self.container_name = container_name
         self.channel = discord_channel
@@ -18,6 +23,7 @@ class DockerMonitor:
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.loop = None
         self.ready_event = ready_event
+        self.messager = messager
 
     async def start_monitoring(self):
         """Start monitoring Docker events"""
@@ -66,22 +72,20 @@ class DockerMonitor:
             return
 
         if action == "die":
-            embed = discord.Embed(
-                color=0xFF0000,
-                title=f"Le serveur s'arrête.",
+            await self.messager.send_embed(
+                "Le serveur s'arrête.", footer=self.friendly_name, color=0xFF0000
             )
-            embed.set_footer(text=self.friendly_name)
-            await self.channel.send(embed=embed)
             logging.info(f"Container {container_name} stopped")
             self.waiting_for_startup = False
+            self.messager.clear_kept_messages()
 
         elif action == "start":
-            embed = discord.Embed(
+            await self.messager.send_embed(
+                "Le serveur démarre.",
+                footer=self.friendly_name,
                 color=0xFFFF00,
-                title="Le serveur démarre.",
+                keep=True,
             )
-            embed.set_footer(text=self.friendly_name)
-            await self.channel.send(embed=embed)
             logging.info(f"Container {container_name} started")
             self.waiting_for_startup = True
 

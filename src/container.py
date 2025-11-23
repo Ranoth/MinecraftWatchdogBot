@@ -1,9 +1,10 @@
 import logging
+import asyncio
+
 from monitoring.docker_monitor import DockerMonitor
 from monitoring.log_monitor import LogMonitor
 from rcon_client import RCONClient
-import asyncio
-
+from messager import Messager
 
 class Container:
     def __init__(
@@ -27,9 +28,11 @@ class Container:
         logging.debug(
             f"Initializing Container: {self.name} at {self.host}, log: {self.log_path}"
         )
+        
+        self.messager = Messager(self.channel)
 
         self.docker_monitor = DockerMonitor(
-            self.host, self.channel, self.name, self.docker_monitors_ready
+            self.host, self.channel, self.name, self.docker_monitors_ready, self.messager
         )
         self.log_monitor = LogMonitor(
             self.log_path,
@@ -38,6 +41,7 @@ class Container:
             self.name,
             self.host,
             self.log_monitors_ready,
+            self.messager
         )
         self.rcon_client = RCONClient(self.host, self.rcon_port, self.rcon_password)
 

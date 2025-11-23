@@ -20,7 +20,6 @@ class EventsCog(commands.Cog):
         await asyncio.gather(self.discord_bot.initialize_containers())
 
         self.health_check.ready = True
-        logging.info("Monitors ready.")
 
         await self.bot.tree.sync()
         logging.info("Command tree synced.")
