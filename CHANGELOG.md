@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.4.0...v1.5.0) (2025-11-23)
+
+
+### Features
+
+* Add status updates to startup ongoing message. ([19203ee](https://github.com/Ranoth/MinecraftWatchdogBot/commit/19203eee112c39a76b14db79986d047ddc7ff583))
+
 ## [1.4.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.3.2...v1.4.0) (2025-11-22)
 
 
