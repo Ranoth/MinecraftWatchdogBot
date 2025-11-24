@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.5.0...v1.6.0) (2025-11-24)
+
+
+### Features
+
+* Add logging file rotation and compression ([086af97](https://github.com/Ranoth/MinecraftWatchdogBot/commit/086af97f13d1db79a3707d0ce38359ba251a393c))
+* Add queue system for container startup updates ([2f7d1c0](https://github.com/Ranoth/MinecraftWatchdogBot/commit/2f7d1c0be19dff1f3cd8dfb95df874175144d3a7))
+
 ## [1.5.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.4.0...v1.5.0) (2025-11-23)
 
 
