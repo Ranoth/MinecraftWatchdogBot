@@ -130,7 +130,7 @@ token.txt
 *.log
 logs/
 
-# Minecraft server files
+# Dev files
 server.jar
 world/
 server.properties
@@ -141,6 +141,8 @@ usercache.json
 eula.txt
 minecraftNewWorldData/
 minecraftModdedData/
+minecraftData/
+minecraftTwoData/
 bot_*/
 
 # docker-compose file

@@ -16,6 +16,7 @@ class ConfigParser:
             def __init__(self):
                 self.discord_token = os.getenv("DISCORD_TOKEN")
                 self.dev_mode = os.getenv("DEV", "false") == "true"
+                self.log_update_interval = os.getenv("LOG_UPDATE_INTERVAL", 1)
 
                 if self.discord_token == "" or self.discord_token is None:
                     raise ValueError("DISCORD_TOKEN environment variable is not set")

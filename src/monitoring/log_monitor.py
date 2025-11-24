@@ -5,13 +5,15 @@ import logging
 
 import monitoring.death_messages as death_messages
 from messager import Messager
+from monitoring.turn_manager import TurnManager
 
 
 class LogMonitor:
-    UNKNOWN_PLAYER = "Unknown Player"
+    _unknown_player = "Unknown Player"
 
     def __init__(
         self,
+        update_interval,
         log_file,
         channel,
         docker_monitor,
@@ -20,17 +22,15 @@ class LogMonitor:
         ready_event,
         messager: Messager,
     ):
+        self.update_interval = update_interval
+        self.log_file = log_file
         self.channel = channel
         self.docker_monitor = docker_monitor
-        self.log_file = log_file
-        self.monitoring = False
-        self.messager = messager
         self.friendly_name = friendly_name
         self.host = host
         self.ready_event = ready_event
-        self.last_startup_log = None
-        self.last_update_time = 0
-        self.startup_update_task = None
+        self.messager = messager
+        self.monitoring = False
 
     def set_docker_monitor(self, docker_monitor):
         """Set reference to docker monitor for communication"""
@@ -102,7 +102,7 @@ class LogMonitor:
                     else:
                         await asyncio.sleep(1)
                 except Exception as e:
-                    logging.debug(f"Error reading log line: {e}")
+                    # logging.debug(f"Error reading log line: {e}")
                     # await asyncio.sleep(1)
                     continue
 
@@ -137,15 +137,22 @@ class LogMonitor:
                 color=0xFFFFFF,
             )
 
-        # [08:45:01] [Server thread/INFO]: Done (1.578s)! For help, type "help"
-        # [06:45:48] [Server thread/INFO]: Done (22.025s)! For help, type "help"
         elif "Done (" in clean_line and "For help, type" in clean_line:
             logging.info("Server startup complete detected from logs")
             if self.docker_monitor:
                 self.docker_monitor.notify_server_ready()
+                # Remove this server from turn rotation since it's done starting
+                if self.docker_monitor.turn_manager:
+                    TurnManager.remove_manager(self.docker_monitor.turn_manager)
+                    logging.info(f"Removed {self.friendly_name} from turn rotation")
+
+            elapsed = (
+                asyncio.get_event_loop().time()
+                - self.docker_monitor.turn_manager.start_time
+            )
 
             await self.messager.send_embed(
-                title="Le serveur démarre.",
+                title=f"Le serveur démarre... {elapsed:.1f}s",
                 description=full_line,
                 footer=self.friendly_name,
                 color=0xFFFF00,
@@ -154,15 +161,14 @@ class LogMonitor:
 
             await self.messager.send_embed(
                 title="Le serveur est prêt.",
+                description=f"Prêt après {elapsed:.1f}s",
                 footer=self.friendly_name,
                 color=0x00FF00,
             )
 
             self.messager.clear_kept_messages()
-
             logging.info("Server ready notification sent directly")
 
-        # Check is death message
         elif death_messages.is_death_message(clean_line):
             player_name, message = self.extract_player_name_and_message(clean_line)
             await self.messager.send_embed(
@@ -172,19 +178,34 @@ class LogMonitor:
                 color=0x000000,
             )
 
+        # Handle startup log updates with sequential timing
         if self.docker_monitor.waiting_for_startup:
-            self.last_startup_log = full_line
-            current_time = asyncio.get_event_loop().time()
+            await self.handle_startup_update(full_line)
 
-            if current_time - self.last_update_time >= 4:
-                self.last_update_time = current_time
-                await self.messager.send_embed(
-                    title="Le serveur démarre.",
-                    description=full_line,
-                    footer=self.friendly_name,
-                    color=0xFFFF00,
-                    keep=True,
-                )
+    async def handle_startup_update(self, full_line):
+        if (
+            not self.docker_monitor.turn_manager.my_turn
+            or not TurnManager._can_send_updates
+        ):
+            return
+
+        elapsed = (
+            asyncio.get_event_loop().time()
+            - self.docker_monitor.turn_manager.start_time
+        )
+        await self.messager.send_embed(
+            title=f"Le serveur démarre... {elapsed:.1f}s",
+            description=full_line,
+            footer=self.friendly_name,
+            color=0xFFFF00,
+            keep=True,
+        )
+
+        logging.debug(f"Startup update sent from {self.friendly_name}")
+        # Don't await - let it run in background so we don't block log reading
+        task = asyncio.create_task(TurnManager._update_current_turn())
+        # Store reference to prevent garbage collection (task will complete on its own)
+        task.add_done_callback(lambda t: None)
 
     def is_chat_message(self, log_line):
         """Check if the log line is a chat message"""
@@ -202,7 +223,7 @@ class LogMonitor:
             message = " ".join(log_line.split()[1:])
             print(message)
             return player_name, message
-        return self.UNKNOWN_PLAYER, None
+        return self._unknown_player, None
 
     def cleanup_log_line(self, log_line):
         """Clean up log line by removing io infos"""

@@ -4,26 +4,28 @@ import docker
 from docker.errors import DockerException
 from concurrent.futures import ThreadPoolExecutor
 from messager import Messager
+from monitoring.turn_manager import TurnManager
 
 
 class DockerMonitor:
     def __init__(
         self,
         container_name,
-        discord_channel,
+        channel,
         friendly_name,
         ready_event,
         messager: Messager,
     ):
         self.container_name = container_name
-        self.channel = discord_channel
+        self.channel = channel
         self.friendly_name = friendly_name
+        self.ready_event = ready_event
+        self.messager = messager
         self.client = None
         self.waiting_for_startup = False
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.loop = None
-        self.ready_event = ready_event
-        self.messager = messager
+        self.turn_manager = None
 
     async def start_monitoring(self):
         """Start monitoring Docker events"""
@@ -77,6 +79,10 @@ class DockerMonitor:
             )
             logging.info(f"Container {container_name} stopped")
             self.waiting_for_startup = False
+            # Remove from turn rotation if it was in startup
+            if self.turn_manager:
+                TurnManager.remove_manager(self.turn_manager)
+                logging.info(f"Removed {self.friendly_name} from turn rotation on container stop")
             self.messager.clear_kept_messages()
 
         elif action == "start":
@@ -88,6 +94,7 @@ class DockerMonitor:
             )
             logging.info(f"Container {container_name} started")
             self.waiting_for_startup = True
+            self.turn_manager = TurnManager()
 
     def notify_server_ready(self):
         """Called by log monitor when server is ready"""

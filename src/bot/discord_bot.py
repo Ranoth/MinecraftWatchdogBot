@@ -33,6 +33,7 @@ class DiscordBot:
                 int(container_config.get("channel_id"))
             )
             container = Container.create(
+                envvars = self.envvars,
                 name=container_config.get("name"),
                 host=container_config.get("host"),
                 rcon_port=container_config.get("rcon_port"),
