@@ -75,15 +75,21 @@ class DockerMonitor:
 
         if action == "die":
             await self.messager.send_embed(
-                "Le serveur s'arrête.", footer=self.friendly_name, color=0xFF0000
+                "Le serveur s'arrête.",
+                description="",
+                footer=self.friendly_name,
+                color=0xFF0000,
+                keep=True,
             )
             logging.info(f"Container {container_name} stopped")
             self.waiting_for_startup = False
             # Remove from turn rotation if it was in startup
             if self.turn_manager:
                 TurnManager.remove_manager(self.turn_manager)
-                logging.info(f"Removed {self.friendly_name} from turn rotation on container stop")
-            self.messager.clear_kept_messages()
+                logging.info(
+                    f"Removed {self.friendly_name} from turn rotation on container stop"
+                )
+            # self.messager.clear_kept_messages()
 
         elif action == "start":
             await self.messager.send_embed(

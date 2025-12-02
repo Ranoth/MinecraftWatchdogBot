@@ -152,18 +152,11 @@ class LogMonitor:
             )
 
             await self.messager.send_embed(
-                title=f"Le serveur démarre... {elapsed:.1f}s",
-                description=full_line,
-                footer=self.friendly_name,
-                color=0xFFFF00,
-                keep=True,
-            )
-
-            await self.messager.send_embed(
                 title="Le serveur est prêt.",
                 description=f"Prêt après {elapsed:.1f}s",
                 footer=self.friendly_name,
                 color=0x00FF00,
+                keep=True,
             )
 
             self.messager.clear_kept_messages()
