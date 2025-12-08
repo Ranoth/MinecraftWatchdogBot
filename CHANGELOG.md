@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.6.1...v1.7.0) (2025-12-08)
+
+
+### Features
+
+* Bot able to send random photos of my cat ([cf63427](https://github.com/Ranoth/MinecraftWatchdogBot/commit/cf63427bcdfbb9f571e105dcb63c2a77764f950d))
+
 ## [1.6.1](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.6.0...v1.6.1) (2025-12-02)
 
 
