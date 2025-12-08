@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.7.0...v1.7.1) (2025-12-08)
+
+
+### Bug Fixes
+
+* commands processed twice ([1f5083c](https://github.com/Ranoth/MinecraftWatchdogBot/commit/1f5083c67a118c144af87025ee5a011b8052845c))
+
 ## [1.7.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.6.1...v1.7.0) (2025-12-08)
 
 
