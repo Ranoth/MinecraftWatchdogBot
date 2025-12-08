@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.6.0...v1.6.1) (2025-12-02)
+
+
+### Bug Fixes
+
+* Bot sends less new messages when servers restart ([61e4f17](https://github.com/Ranoth/MinecraftWatchdogBot/commit/61e4f17c1bb8e5c7acf3fa2379507d3c2d798d58))
+
 ## [1.6.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.5.0...v1.6.0) (2025-11-24)
 
 
