@@ -75,7 +75,6 @@ class CommandsCog(cmds.Cog):
         
     @cmds.command(name="chaussette", brief="Envoie une photo aléatoire de Chaussette.")
     async def chaussette(self, ctx):
-        logging.info("Commande chaussette appelée") 
         path = self.envvars.chaussette
         if not path:
             await ctx.send("Chemin de photos de Chaussette non configuré.")

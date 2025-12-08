@@ -23,7 +23,3 @@ class EventsCog(commands.Cog):
 
         await self.bot.tree.sync()
         logging.info("Command tree synced.")
-
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        await self.bot.process_commands(message)
