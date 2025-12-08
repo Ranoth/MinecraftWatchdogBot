@@ -144,6 +144,7 @@ minecraftModdedData/
 minecraftData/
 minecraftTwoData/
 bot_*/
+Chaussette/
 
 # docker-compose file
 docker-compose.yaml

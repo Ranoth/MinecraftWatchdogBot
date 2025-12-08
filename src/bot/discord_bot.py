@@ -26,7 +26,6 @@ class DiscordBot:
         """Initialize containers after bot is ready"""
         logging.debug(f"Container configs: {self.container_configs}")
         
-        # Create all containers concurrently (without waiting)
         for container_config in self.container_configs:
             logging.debug(f"Container : {container_config}")
             channel = await self.bot.fetch_channel(

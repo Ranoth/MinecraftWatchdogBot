@@ -25,6 +25,7 @@ minecraftTwoData/
 # Development files
 dev.sh
 bot_*/
+Chaussette/
 
 # Docker files
 docker-compose.yaml
