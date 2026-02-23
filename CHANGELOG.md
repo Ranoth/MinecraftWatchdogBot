@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.7.1...v1.8.0) (2026-02-23)
+
+
+### Features
+
+* Add RCON command sending support for all configured containers ([3f7573f](https://github.com/Ranoth/MinecraftWatchdogBot/commit/3f7573f0ce17f2bded8445033ff55a1483ef79cd))
+
 ## [1.7.1](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.7.0...v1.7.1) (2025-12-08)
 
 
