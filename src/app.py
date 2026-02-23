@@ -2,14 +2,22 @@ import logging
 import discord
 from discord.ext import commands
 import asyncio
+from typing import Optional
 
-from bot.commands import CommandsCog
-from bot.events import EventsCog
 from container import Container
 from health_check import HealthCheck
 
 
-class DiscordBot:
+class AppBot(commands.Bot):
+    """Custom Bot class with app dependencies"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.app: Optional['App'] = None
+        self.envvars = None
+        self.health_check: Optional[HealthCheck] = None
+
+
+class App:
     def __init__(self, envvars, container_configs):
         self.envvars = envvars
         self.container_configs = container_configs
@@ -18,7 +26,7 @@ class DiscordBot:
         intents = discord.Intents.default()
         intents.message_content = True
         intents.members = True
-        self.bot = commands.Bot(command_prefix="!", intents=intents)
+        self.bot = AppBot(command_prefix="!", intents=intents)
 
         self.bot.remove_command("help")
 
@@ -48,13 +56,19 @@ class DiscordBot:
         
         return self.containers
 
-    async def run(self):
+    async def run_discord_bot(self):
         """Run the Discord bot"""
         health_check = HealthCheck()
         await health_check.start_server()
         
-        await self.bot.add_cog(EventsCog(self.bot, self.envvars, self, health_check))
-        await self.bot.add_cog(CommandsCog(self.bot, self.envvars, self))
+        # Attach dependencies to bot for cogs to access
+        self.bot.app = self
+        self.bot.envvars = self.envvars
+        self.bot.health_check = health_check
+        
+        # Load cogs using standard extension loading
+        await self.bot.load_extension('cogs.events')
+        await self.bot.load_extension('cogs.commands')
 
         try:
             await self.bot.start(self.envvars.discord_token)

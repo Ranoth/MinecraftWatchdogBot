@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from init import init
-from bot.discord_bot import DiscordBot
+from app import App
 
 
 async def main():
@@ -9,9 +9,9 @@ async def main():
         envvars, container_configs = init()
 
         logging.info("Starting Discord Bot...")
-        bot = DiscordBot(envvars, container_configs)
+        app = App(envvars, container_configs)
 
-        await bot.run()
+        await app.run_discord_bot()
     except ValueError as e:
         logging.error(f"Initialization error: {e}")
         return

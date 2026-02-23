@@ -15,6 +15,7 @@ class ConfigParser:
         class EnvConfig:
             def __init__(self):
                 self.discord_token = os.getenv("DISCORD_TOKEN")
+                self.guild_id = os.getenv("GUILD_ID")
                 self.dev_mode = os.getenv("DEV", "false") == "true"
                 self.log_update_interval = os.getenv("LOG_UPDATE_INTERVAL", 1)
                 self.chaussette = os.getenv("CHAUSSETTE", "")
