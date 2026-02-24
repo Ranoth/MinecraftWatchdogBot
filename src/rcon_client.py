@@ -14,7 +14,7 @@ class RCONClient:
 
     async def connect(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.settimeout(5)
+        self.socket.settimeout(30)  # Increased timeout for slow commands like locate
         await asyncio.get_event_loop().run_in_executor(
             None, self.socket.connect, (self.host, self.port)
         )
