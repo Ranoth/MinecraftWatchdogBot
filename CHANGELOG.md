@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.8.0...v1.9.0) (2026-02-24)
+
+
+### Features
+
+* Add locate command ([7e196a2](https://github.com/Ranoth/MinecraftWatchdogBot/commit/7e196a21649a621fc2cd1c016ea232ed095676a6))
+* Commands are now guild specific ([9e640b3](https://github.com/Ranoth/MinecraftWatchdogBot/commit/9e640b3ab242b88ea0a376d85f18a9e44248aea9))
+
 ## [1.8.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.7.1...v1.8.0) (2026-02-23)
 
 
