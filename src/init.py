@@ -17,7 +17,7 @@ def init():
     os.makedirs("/app/monitoring", exist_ok=True)
 
     root = logging.getLogger()
-    for h in list(root.handlers):
+    for h in root.handlers:
         root.removeHandler(h)
 
     root_level = logging.DEBUG if envvars.dev_mode else logging.INFO

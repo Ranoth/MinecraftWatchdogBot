@@ -33,16 +33,14 @@ class EventsCog(commands.Cog):
         self.health_check.ready = True
 
         try:
-            logging.info(f"Syncing commands to guild {self.guild.id}...")
             synced = await self.bot.tree.sync(guild=self.guild)
             logging.info(
-                f"Guild command tree synced. {len(synced)} commands registered"
+                f"Guild command tree synced for {self.guild.id}. {len(synced)} commands registered"
             )
-            
+
             if self.envvars.dev_mode:
-                logging.info("Clearing global command tree...")
                 await self.bot.tree.sync()
-                logging.info("Global command tree cleared")
+                logging.debug("Global command tree synced")
         except Exception as e:
             logging.error(f"Failed to sync command tree: {e}")
 

@@ -4,7 +4,7 @@ import asyncio
 class TurnManager:
     _managers = {}
     _update_interval = 1.5
-    _total_turns = 0  # Total number of monitors sending updates
+    _total_turns = 0
     _current_turn = 0
     _can_send_updates = True
 

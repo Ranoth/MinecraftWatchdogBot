@@ -1,9 +1,6 @@
 """
 Minecraft Death Messages Database
 Extracted from https://minecraft.wiki/w/Death_messages
-
-This module contains all Minecraft Java Edition death messages organized by category.
-Each death message is a string that can appear in the Minecraft server logs.
 """
 
 # Standard death message patterns with placeholders:
@@ -172,12 +169,10 @@ MINECRAFT_DEATH_MESSAGES = {
     ]
 }
 
-# Flattened list of all death messages for easy searching
 ALL_DEATH_MESSAGES = []
 for category, messages in MINECRAFT_DEATH_MESSAGES.items():
     ALL_DEATH_MESSAGES.extend(messages)
 
-# Common player/mob names and items for pattern matching
 COMMON_PLAYER_NAMES = [
     "Steve", "Alex", "Notch", "Herobrine", "Player", "Admin"
 ]
@@ -193,7 +188,6 @@ COMMON_ITEMS = [
     "Netherite Sword", "Enchanted Book", "Golden Apple", "TNT"
 ]
 
-# Regex patterns for placeholder replacement
 PLAYER_PATTERN = r"[A-Za-z0-9_]+"
 ENTITY_PATTERN = r"[A-Za-z0-9_ ]+"
 ITEM_PATTERN = r"[A-Za-z0-9_ ]+"
@@ -218,7 +212,6 @@ def is_death_message(message):
     import re
     message = message.strip()
     
-    # Check for exact matches with placeholders
     for death_msg in ALL_DEATH_MESSAGES:
         pattern = _create_regex_pattern(death_msg)
         if re.match(pattern, message):
@@ -248,7 +241,6 @@ def get_death_message_category(message):
 
 # Example usage:
 if __name__ == "__main__":
-    # Test some example death messages
     test_messages = [
         "Steve was pricked to death",
         "Alex fell from a high place",

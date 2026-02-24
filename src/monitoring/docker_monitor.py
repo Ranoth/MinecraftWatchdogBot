@@ -32,9 +32,9 @@ class DockerMonitor:
         self.loop = asyncio.get_event_loop()
 
         if self.loop:
-            await self.loop.run_in_executor(self.executor, self._monitor_docker_events)
+            await self.loop.run_in_executor(self.executor, self.monitor_docker_events)
 
-    def _monitor_docker_events(self):
+    def monitor_docker_events(self):
         """Monitor Docker events in a separate thread"""
         while True:
             try:
