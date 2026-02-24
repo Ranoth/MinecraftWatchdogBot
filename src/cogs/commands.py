@@ -155,10 +155,14 @@ class CommandsCog(commands.Cog):
                 f"Serveur '{server}' introuvable.", ephemeral=True
             )
             return
+        
+        # Defer response since locate can take a long time
+        await interaction.response.defer()
+        
         result = await container.rcon_client.send_command_wrapper(
             command=f"locate {target_type} {target}"
         )
-        await interaction.response.send_message(result)
+        await interaction.followup.send(result)
 
     @app_commands.command(
         name="chaussette", description="Envoie une photo aléatoire de Chaussette."
