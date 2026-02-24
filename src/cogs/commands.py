@@ -165,6 +165,27 @@ class CommandsCog(commands.Cog):
         await interaction.followup.send(result)
 
     @app_commands.command(
+        name="tp",
+        description="Téléporte une entitée à des coordonnées spécifiques ou une autre entitée.",
+    )
+    @app_commands.autocomplete(server=server_autocomplete)
+    @requires_container()
+    async def tp(
+        self, interaction: discord.Interaction, server: str, target: str, location: str
+    ):
+        """Téléporte une entitée à des coordonnées spécifiques ou une autre entitée."""
+        container = self.get_container_by_name(server)
+        if not container:
+            await interaction.response.send_message(
+                f"Serveur '{server}' introuvable.", ephemeral=True
+            )
+            return
+        result = await container.rcon_client.send_command_wrapper(
+            command=f"tp {target} {location}"
+        )
+        await interaction.response.send_message(result)
+
+    @app_commands.command(
         name="chaussette", description="Envoie une photo aléatoire de Chaussette."
     )
     async def chaussette(self, interaction: discord.Interaction):
