@@ -70,6 +70,28 @@ class CommandsCog(commands.Cog):
             if current.lower() in option.lower()
         ]
 
+    async def player_name_autocomplete(
+        self, interaction: discord.Interaction, current: str
+    ) -> list[app_commands.Choice[str]]:
+        """Autocomplete for player name selection - shows online players."""
+        # Namespace is an object, not a dict; access attributes safely.
+        server_name = getattr(interaction.namespace, "server", None)
+        container = self.get_container_by_name(server_name)  # type: ignore
+        if not container:
+            return []
+        players_response = await container.rcon_client.send_command_wrapper(
+            command="list"
+        )
+        # Extract player names from the response (assuming format "There are X of a max Y players online: player1, player2, ...")
+        if ":" in players_response:
+            players_list = players_response.split(":")[1].strip().split(", ")
+            return [
+                app_commands.Choice(name=player, value=player)
+                for player in players_list
+                if current.lower() in player.lower()
+            ]
+        return []
+
     @app_commands.command(
         name="list", description="Liste les joueurs connectés au serveur."
     )
