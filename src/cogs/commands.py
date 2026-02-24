@@ -8,7 +8,7 @@ def requires_container():
     """Decorator to check if containers are configured before running a command."""
 
     async def predicate(interaction: discord.Interaction) -> bool:
-        cog = interaction.client.get_cog("CommandsCog") # type: ignore
+        cog = interaction.client.get_cog("CommandsCog")  # type: ignore
         if not cog or not cog.app.containers:
             await interaction.response.send_message(
                 "Aucun serveur configuré.", ephemeral=True
@@ -37,7 +37,7 @@ class CommandsCog(commands.Cog):
         if self.envvars.guild_id:
             guild = discord.Object(id=int(self.envvars.guild_id))
             for command in self.get_app_commands():
-                if hasattr(command, '_guild_ids'):
+                if hasattr(command, "_guild_ids"):
                     command._guild_ids = [guild.id]
 
     def get_container_by_name(self, server_name: str):
@@ -177,10 +177,10 @@ class CommandsCog(commands.Cog):
                 f"Serveur '{server}' introuvable.", ephemeral=True
             )
             return
-        
+
         # Defer response since locate can take a long time
         await interaction.response.defer()
-        
+
         result = await container.rcon_client.send_command_wrapper(
             command=f"locate {target_type} {target}"
         )

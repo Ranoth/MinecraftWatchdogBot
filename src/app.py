@@ -51,7 +51,6 @@ class App:
             )
             self.containers.append(container)
 
-        # Wait for all containers to be ready concurrently
         await asyncio.gather(
             *[container.wait_until_ready() for container in self.containers]
         )
@@ -64,12 +63,10 @@ class App:
         health_check = HealthCheck()
         await health_check.start_server()
 
-        # Attach dependencies to bot for cogs to access
         self.bot.app = self
         self.bot.envvars = self.envvars
         self.bot.health_check = health_check
 
-        # Load cogs using standard extension loading
         await self.bot.load_extension("cogs.events")
         await self.bot.load_extension("cogs.commands")
 

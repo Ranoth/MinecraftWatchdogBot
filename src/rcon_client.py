@@ -14,7 +14,7 @@ class RCONClient:
 
     async def connect(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.settimeout(30)  # Increased timeout for slow commands like locate
+        self.socket.settimeout(30)
         await asyncio.get_event_loop().run_in_executor(
             None, self.socket.connect, (self.host, self.port)
         )
@@ -22,7 +22,7 @@ class RCONClient:
 
     async def authenticate(self):
         try:
-            auth_response = await self._send_packet(3, self.password)  # Type 3 = AUTH
+            auth_response = await self._send_packet(3, self.password)
             if auth_response is None:
                 raise Exception("Authentication failed")
             logging.debug("RCON connection established")
