@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.1](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.9.0...v1.9.1) (2026-02-24)
+
+
+### Bug Fixes
+
+* Timeout when bot takes more than 3 seconds to respond ([11d1fed](https://github.com/Ranoth/MinecraftWatchdogBot/commit/11d1fed5c49e5fb6884f1ae5f989b989bcefee1c))
+
 ## [1.9.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.8.0...v1.9.0) (2026-02-24)
 
 
