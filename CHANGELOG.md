@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.9.2...v1.10.0) (2026-02-24)
+
+
+### Features
+
+* Add teleport command support ([ec8a10b](https://github.com/Ranoth/MinecraftWatchdogBot/commit/ec8a10b5c3db7cf3e3dedb39043dba65523ba3b8))
+
 ## [1.9.2](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.9.1...v1.9.2) (2026-02-24)
 
 
