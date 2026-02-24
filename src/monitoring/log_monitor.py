@@ -101,8 +101,7 @@ class LogMonitor:
                         await self.process_log_line(message, line)
                     else:
                         await asyncio.sleep(1)
-                except Exception as e:
-                    # logging.debug(f"Error reading log line: {e}")
+                except Exception:
                     # await asyncio.sleep(1)
                     continue
 
