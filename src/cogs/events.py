@@ -14,11 +14,11 @@ class EventsCog(commands.Cog):
     @property
     def app(self):
         return self.bot.app
-    
+
     @property
     def envvars(self):
         return self.bot.envvars
-    
+
     @property
     def health_check(self):
         return self.bot.health_check
@@ -32,19 +32,24 @@ class EventsCog(commands.Cog):
         await self.app.initialize_containers()
 
         self.health_check.ready = True
-        
-        # Copy global commands to guild for instant sync (dev mode)
-        # For production, just sync globally without copy_global_to
+
+        # Sync command tree
+        # Commands already have guild_ids set, so just sync to the guild
         try:
-            logging.info(f"Copying commands to guild {self.guild.id}...")
-            if self.envvars.dev_mode: 
-                self.bot.tree.copy_global_to(guild=self.guild)
-                synced = await self.bot.tree.sync(guild=self.guild)
-            else:
-                synced = await self.bot.tree.sync()
-            logging.info(f"Guild command tree synced. {len(synced)} commands registered.")
+            logging.info(f"Syncing commands to guild {self.guild.id}...")
+            synced = await self.bot.tree.sync(guild=self.guild)
+            logging.info(
+                f"Guild command tree synced. {len(synced)} commands registered."
+            )
+            
+            # Clear global commands only once (for migration from global to guild commands)
+            # Remove this block after first successful run
+            if self.envvars.dev_mode:
+                logging.info("Clearing global command tree...")
+                await self.bot.tree.sync()
+                logging.info("Global command tree cleared.")
         except Exception as e:
-            logging.error(f"Failed to sync guild command tree: {e}")
+            logging.error(f"Failed to sync command tree: {e}")
 
 
 async def setup(bot):
