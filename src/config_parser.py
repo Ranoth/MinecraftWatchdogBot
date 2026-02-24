@@ -22,6 +22,8 @@ class ConfigParser:
 
                 if self.discord_token == "" or self.discord_token is None:
                     raise ValueError("DISCORD_TOKEN environment variable is not set")
+                if self.guild_id == "" or self.guild_id is None:
+                    raise ValueError("GUILD_ID environment variable is not set")
 
         return EnvConfig()
 
