@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.2](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.9.1...v1.9.2) (2026-02-24)
+
+
+### Bug Fixes
+
+* Increase rcon timeout time to 30 seconds for slow commands ([6073c70](https://github.com/Ranoth/MinecraftWatchdogBot/commit/6073c70aeffc48c8df85d237bc2f5bcf3a2874b4))
+
 ## [1.9.1](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.9.0...v1.9.1) (2026-02-24)
 
 
