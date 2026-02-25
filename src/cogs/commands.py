@@ -1,5 +1,7 @@
 import logging
 import discord
+import docker
+import docker.errors
 from discord.ext import commands
 from discord import app_commands
 
@@ -210,7 +212,7 @@ class CommandsCog(commands.Cog):
     @app_commands.command(name="restart", description="Redémarre le serveur Minecraft")
     @app_commands.autocomplete(server=server_autocomplete)
     @requires_container()
-    async def restart_minecraft_server(
+    async def restart_minecraft_server_container(
         self, interaction: discord.Interaction, server: str
     ):
         """Redémarre le serveur Minecraft."""
@@ -220,8 +222,22 @@ class CommandsCog(commands.Cog):
                 f"Serveur '{server}' introuvable.", ephemeral=True
             )
             return
-        result = await container.rcon_client.send_command_wrapper(command="stop")
-        await interaction.response.send_message(result)
+
+        client = docker.from_env()
+        try:
+            docker_container = client.containers.get(container.host)
+            docker_container.restart()
+        except docker.errors.NotFound:
+            await interaction.response.send_message(
+                f"Conteneur Docker pour le serveur '{server}' introuvable."
+            )
+            return
+        except docker.errors.APIError as e:
+            await interaction.response.send_message(
+                f"Erreur lors du redémarrage du serveur '{server}': {e}"
+            )
+            return
+        await interaction.response.send_message("Redémarrage du serveur...")
 
     @app_commands.command(
         name="chaussette", description="Envoie une photo aléatoire de Chaussette."
