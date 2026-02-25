@@ -24,7 +24,7 @@ def requires_container():
 class CommandsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self._set_guild_for_commands()
+        self.set_guild_for_commands()
 
     @property
     def app(self):
@@ -34,7 +34,21 @@ class CommandsCog(commands.Cog):
     def envvars(self):
         return self.bot.envvars
 
-    def _set_guild_for_commands(self):
+    async def get_photo_random(self, path_to_file):
+        import os
+        import random
+
+        files = [
+            f
+            for f in os.listdir(path_to_file)
+            if os.path.isfile(os.path.join(path_to_file, f))
+        ]
+        if not files:
+            return None
+        selected_file = random.choice(files)
+        return os.path.join(path_to_file, selected_file)
+
+    def set_guild_for_commands(self):
         """Set the guild ID for all app commands based on envvars."""
         if self.envvars.guild_id:
             guild = discord.Object(id=int(self.envvars.guild_id))
@@ -108,7 +122,7 @@ class CommandsCog(commands.Cog):
             )
             return
         players = await container.rcon_client.send_command_wrapper(command="list")
-        await interaction.response.send_message(players)
+        await interaction.response.send_message(players, ephemeral=True)
 
     @app_commands.command(
         name="whitelist", description="Ajoute un joueur à la whitelist du serveur."
@@ -142,21 +156,7 @@ class CommandsCog(commands.Cog):
             )
             return
         status = await container.rcon_client.send_command_wrapper(command="tick query")
-        await interaction.response.send_message(status)
-
-    async def get_photo_random(self, path_to_file):
-        import os
-        import random
-
-        files = [
-            f
-            for f in os.listdir(path_to_file)
-            if os.path.isfile(os.path.join(path_to_file, f))
-        ]
-        if not files:
-            return None
-        selected_file = random.choice(files)
-        return os.path.join(path_to_file, selected_file)
+        await interaction.response.send_message(status, ephemeral=True)
 
     @app_commands.command(
         name="locate", description="Localise un joueur sur la carte du serveur."
@@ -229,15 +229,18 @@ class CommandsCog(commands.Cog):
             docker_container.restart()
         except docker.errors.NotFound:
             await interaction.response.send_message(
-                f"Conteneur Docker pour le serveur '{server}' introuvable."
+                f"Conteneur Docker pour le serveur '{server}' introuvable.",
+                ephemeral=True,
             )
             return
         except docker.errors.APIError as e:
             await interaction.response.send_message(
-                f"Erreur lors du redémarrage du serveur '{server}': {e}"
+                f"Erreur lors du redémarrage du serveur '{server}': {e}", ephemeral=True
             )
             return
-        await interaction.response.send_message("Redémarrage du serveur...")
+        await interaction.response.send_message(
+            "Redémarrage du serveur...", ephemeral=True
+        )
 
     @app_commands.command(
         name="chaussette", description="Envoie une photo aléatoire de Chaussette."
@@ -260,39 +263,41 @@ class CommandsCog(commands.Cog):
 
         await interaction.response.send_message(file=discord.File(chaussette_photos))
 
-    @app_commands.command(name="help", description="Affiche l'aide pour les commandes disponibles.")
+    @app_commands.command(
+        name="help", description="Affiche l'aide pour les commandes disponibles."
+    )
     async def help(self, interaction: discord.Interaction):
         """Affiche l'aide pour les commandes disponibles."""
         embed = discord.Embed(
             title="📖 Commandes Disponibles",
             description="Voici la liste de toutes les commandes disponibles :",
-            color=discord.Color.blue()
+            color=discord.Color.blue(),
         )
-        
+
         for command in self.get_app_commands():
             params = []
-            for param in command.parameters: # type: ignore
+            for param in command.parameters:  # type: ignore
                 if param.required:
                     params.append(f"<{param.name}>")
                 else:
                     params.append(f"[{param.name}]")
-            
+
             if params:
                 command_usage = f"`/{command.name} {' '.join(params)}`"
             else:
                 command_usage = f"`/{command.name}`"
-            
+
             embed.add_field(
                 name=command_usage,
                 value=command.description or "Pas de description disponible.",
-                inline=False
+                inline=False,
             )
-        
+
         embed.set_footer(text="<> = requis | [] = optionnel")
-        
+
         await interaction.response.send_message(embed=embed, ephemeral=True)
-        
-        
+
+
 async def setup(bot):
     """Load the CommandsCog into the bot."""
     await bot.add_cog(CommandsCog(bot))
