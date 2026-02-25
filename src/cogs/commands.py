@@ -207,6 +207,22 @@ class CommandsCog(commands.Cog):
         )
         await interaction.response.send_message(result)
 
+    @app_commands.command(name="restart", description="Redémarre le serveur Minecraft")
+    @app_commands.autocomplete(server=server_autocomplete)
+    @requires_container()
+    async def restart_minecraft_server(
+        self, interaction: discord.Interaction, server: str
+    ):
+        """Redémarre le serveur Minecraft."""
+        container = self.get_container_by_name(server)
+        if not container:
+            await interaction.response.send_message(
+                f"Serveur '{server}' introuvable.", ephemeral=True
+            )
+            return
+        result = await container.rcon_client.send_command_wrapper(command="stop")
+        await interaction.response.send_message(result)
+
     @app_commands.command(
         name="chaussette", description="Envoie une photo aléatoire de Chaussette."
     )
