@@ -25,14 +25,11 @@ def init():
 
     fmt = logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
 
-    # Rotate log file when it reaches 10MB, keep 5 backup files
     fh = RotatingFileHandler("/app/logs/discord.log", encoding="utf-8", mode="a", maxBytes=10*1024*1024, backupCount=1)
     
-    # Compress rotated log files with gzip and add timestamp
     def namer(name: str) -> str:
-        # Convert discord.log.1 to discord.log.YYYYMMDD_HHMMSS.gz
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        base = name.rsplit(".", 1)[0]  # Remove the rotation number
+        base = name.rsplit(".", 1)[0]
         return f"{base}.{timestamp}.gz"
     
     def rotator(source: str, dest: str) -> None:
