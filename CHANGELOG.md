@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.11.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.10.0...v1.11.0) (2026-02-25)
+
+
+### Features
+
+* Add help command ([6b0e46a](https://github.com/Ranoth/MinecraftWatchdogBot/commit/6b0e46a294217b18b26966789f35259ecb6ddee8))
+* Add restart minecraft server command ([d9c16e3](https://github.com/Ranoth/MinecraftWatchdogBot/commit/d9c16e392a9422745b86742e33783b2e9cdebee9))
+* Add restart minecraft server command ([e3afcfd](https://github.com/Ranoth/MinecraftWatchdogBot/commit/e3afcfd244d012c4a615fb03fdee1b35747e34e5))
+
 ## [1.10.0](https://github.com/Ranoth/MinecraftWatchdogBot/compare/v1.9.2...v1.10.0) (2026-02-24)
 
 
