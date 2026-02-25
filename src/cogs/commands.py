@@ -209,13 +209,13 @@ class CommandsCog(commands.Cog):
         )
         await interaction.response.send_message(result)
 
-    @app_commands.command(name="restart", description="Redémarre le serveur Minecraft")
+    @app_commands.command(name="restart", description="Redémarre le serveur.")
     @app_commands.autocomplete(server=server_autocomplete)
     @requires_container()
     async def restart_minecraft_server_container(
         self, interaction: discord.Interaction, server: str
     ):
-        """Redémarre le serveur Minecraft."""
+        """Redémarre le serveur."""
         container = self.get_container_by_name(server)
         if not container:
             await interaction.response.send_message(
