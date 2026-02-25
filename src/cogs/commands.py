@@ -159,7 +159,7 @@ class CommandsCog(commands.Cog):
         await interaction.response.send_message(status, ephemeral=True)
 
     @app_commands.command(
-        name="locate", description="Localise un joueur sur la carte du serveur."
+        name="locate", description="Localise une structure, un biome ou un point d'intérêt"
     )
     @app_commands.autocomplete(
         server=server_autocomplete, target_type=locate_target_type_autocomplete
