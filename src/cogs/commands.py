@@ -260,7 +260,39 @@ class CommandsCog(commands.Cog):
 
         await interaction.response.send_message(file=discord.File(chaussette_photos))
 
-
+    @app_commands.command(name="help", description="Affiche l'aide pour les commandes disponibles.")
+    async def help(self, interaction: discord.Interaction):
+        """Affiche l'aide pour les commandes disponibles."""
+        embed = discord.Embed(
+            title="📖 Commandes Disponibles",
+            description="Voici la liste de toutes les commandes disponibles :",
+            color=discord.Color.blue()
+        )
+        
+        for command in self.get_app_commands():
+            params = []
+            for param in command.parameters: # type: ignore
+                if param.required:
+                    params.append(f"<{param.name}>")
+                else:
+                    params.append(f"[{param.name}]")
+            
+            if params:
+                command_usage = f"`/{command.name} {' '.join(params)}`"
+            else:
+                command_usage = f"`/{command.name}`"
+            
+            embed.add_field(
+                name=command_usage,
+                value=command.description or "Pas de description disponible.",
+                inline=False
+            )
+        
+        embed.set_footer(text="<> = requis | [] = optionnel")
+        
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+        
+        
 async def setup(bot):
     """Load the CommandsCog into the bot."""
     await bot.add_cog(CommandsCog(bot))
