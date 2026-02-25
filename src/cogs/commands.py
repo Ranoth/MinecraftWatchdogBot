@@ -7,7 +7,7 @@ from discord import app_commands
 
 
 def requires_container():
-    """Decorator to check if containers are configured before running a command."""
+    """Check if containers are configured before running a command."""
 
     async def predicate(interaction: discord.Interaction) -> bool:
         cog = interaction.client.get_cog("CommandsCog")  # type: ignore
