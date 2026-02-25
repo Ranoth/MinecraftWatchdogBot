@@ -9,6 +9,7 @@ async def main():
         envvars, container_configs = init()
 
         logging.info("Starting Discord Bot...")
+        
         app = App(envvars, container_configs)
 
         await app.run_discord_bot()
